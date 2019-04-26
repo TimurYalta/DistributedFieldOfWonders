@@ -11,8 +11,8 @@ class Player(object):
         self.description = ''
         self.playerURIs = {}
         self.players = {}
-        self.daemon = Pyro4.Daemon()
-        self.URI = self.daemon.register(Player)
+        #self.daemon = Pyro4.Daemon()
+        self.URI = None
         self.ID = None
         self.receivedFrom = []
         # TODO self.number
@@ -20,7 +20,7 @@ class Player(object):
     def register(self):
         r = requests.post('http://127.0.0.1:5000/registerUser', json={"uri": str(self.URI)})
         if r.status_code == 200:
-            self.daemon.requestLoop()
+            #self.daemon.requestLoop()
             return
 
 
@@ -29,16 +29,17 @@ class Player(object):
         self.codedLetters = letters
         self.letters = ['*' for _ in range(len(letters))]
         self.hashedAnswer = answer
-        self.playerURIs = players
+        self.players = players
         self.description = description
         players = {}
         for number, uri in self.playerURIs.items():
-            if self.URI == uri:
+            if str(self.URI)== str(uri):
                 continue
-            players[number] = Pyro4.Proxy(uri)
+            players[number] = Pyro4.Proxy(str(uri))
         for id in self.players:
-            if self.players[id] == self.URI:
-                self.ID = self.players[id]
+            if str(self.players[id]) == str(self.URI):
+                self.ID = id
+        self.players = players
         if self.ID == 1:
             self.performTurn()
 
@@ -95,7 +96,11 @@ class Player(object):
 
 if __name__ == '__main__':
     player = Player()
+    daemon = Pyro4.Daemon()
+    uri = daemon.register(player)
+    player.URI = uri
     player.register()
+    daemon.requestLoop()
 
     #
     # def startFirstTimer(self):
