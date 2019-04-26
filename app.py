@@ -7,15 +7,18 @@ app = Flask(__name__)
 users = {}
 questions = {'Each modern man knows what is \"I don\'t understand you\" in a language of Australian aborigens': 'Kangaroo'}
 
-@app.route('/registerUser')
+@app.route('/registerUser', methods=['POST'])
 def register_user():
     uri = request.get_json()['uri']
+
     users[len(users) + 1] = uri
-    if len(users) == 5:
+    print(users)
+    if len(users) == 3:
         start_game()
+    return 'sosi'
 
 def start_game():
-    question = random.choice(questions.keys())
+    question = random.choice(list(questions.keys()))
     answer = questions[question]
     hashed_letters = [hash(letter) for letter in answer]
     hashed_answer = hash(answer)
